@@ -1,6 +1,7 @@
 package com.droid.yudi.sunshine;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -83,8 +84,11 @@ public class ForecastFragment extends Fragment{
                 //TextView textView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
                 String forecast = adapter.getItem(position);
                 Toast.makeText(getActivity(), forecast, Toast.LENGTH_SHORT).show();
-
                 //Toast.makeText(getActivity(), textView.getText().toString(), Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(intent);
+
 
             }
         });
