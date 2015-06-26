@@ -1,5 +1,6 @@
 package com.droid.yudi.sunshine;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 public class DetailActivity extends AppCompatActivity {
@@ -59,7 +61,17 @@ public class DetailActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
 
-            return inflater.inflate(R.layout.fragment_detail, container, false);
+            Intent intent = getActivity().getIntent();
+            View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+            if(intent != null && intent.hasExtra(Intent.EXTRA_TEXT)){
+                String data = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+                TextView text = (TextView) rootView.findViewById(R.id.txtView);
+                text.setText(data);
+
+            }
+
+            return rootView;
         }
     }
 }

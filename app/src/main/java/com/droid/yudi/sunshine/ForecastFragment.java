@@ -89,6 +89,7 @@ public class ForecastFragment extends Fragment{
                 startActivity(intent);
 
 
+
             }
         });
 
