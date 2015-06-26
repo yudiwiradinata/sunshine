@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,7 +82,7 @@ public class ForecastFragment extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //TextView textView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
                 String forecast = adapter.getItem(position);
-                Toast.makeText(getActivity(), forecast, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity(), forecast, Toast.LENGTH_SHORT).show();
                 //Toast.makeText(getActivity(), textView.getText().toString(), Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
