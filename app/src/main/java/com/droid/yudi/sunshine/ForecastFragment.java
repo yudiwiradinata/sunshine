@@ -2,9 +2,11 @@ package com.droid.yudi.sunshine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -37,7 +39,8 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ForecastFragment extends Fragment{
+public class ForecastFragment extends Fragment {
+
 
     public ForecastFragment() {
     }
@@ -53,20 +56,22 @@ public class ForecastFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ArrayList list = new ArrayList();
-        list.add("Today-Sunny-88/63");
+
+       /* list.add("Today-Sunny-88/63");
         list.add("Tomorrow-Foggy-88/64");
         list.add("Weds-Sunny-88/70");
         list.add("Thurs-Cloudy-88/60");
         list.add("Fri-Rainy-88/61");
-        list.add("Sat-Rainy-88/56");
+        list.add("Sat-Rainy-88/56");*/
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+
         adapter = new AdapterCustom(getActivity(),
-                                R.layout.list_item_forecast,
-                                R.id.list_item_forecast_textview,
-                                list);
+                R.layout.list_item_forecast,
+                R.id.list_item_forecast_textview,
+                new ArrayList());
+
         /*ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                                         R.layout.list_item_forecast,
                                          R.id.list_item_forecast_textview,
@@ -85,9 +90,8 @@ public class ForecastFragment extends Fragment{
                 //Toast.makeText(getActivity(), forecast, Toast.LENGTH_SHORT).show();
                 //Toast.makeText(getActivity(), textView.getText().toString(), Toast.LENGTH_SHORT).show();
 
-                Intent intent = new Intent(getActivity(),DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
+                Intent intent = new Intent(getActivity(), DetailActivity.class).putExtra(Intent.EXTRA_TEXT, forecast);
                 startActivity(intent);
-
 
 
             }
@@ -106,22 +110,33 @@ public class ForecastFragment extends Fragment{
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.action_refresh){
-            FetchWeatherTask task = new FetchWeatherTask();
-            task.execute("Jakarta");
+        if (id == R.id.action_refresh) {
+            updateWeather();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
 
+    private void updateWeather() {
+        FetchWeatherTask task = new FetchWeatherTask();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = sharedPreferences.getString(getString(R.string.pref_key_location), getString(R.string.pref_default_value));
+        task.execute(location);
+        //task.execute("Jakarta");
+    }
 
-    private class FetchWeatherTask extends AsyncTask<String,Void,String[]>{
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
-        private String getReadableDateString(long time){
+        private String getReadableDateString(long time) {
             // Because the API returns a unix timestamp (measured in seconds),
             // it must be converted to milliseconds in order to be converted to valid date.
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
@@ -133,6 +148,15 @@ public class ForecastFragment extends Fragment{
          */
         private String formatHighLows(double high, double low) {
             // For presentation, assume the user doesn't care about tenths of a degree.
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = pref.getString(getString(R.string.pref_key_units), getString(R.string.pref_default_units_metric));
+            if(unitType.equals(getString(R.string.pref_units_imperial))){
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            }else if(!unitType.equals(getString(R.string.pref_units_metric))){
+                Log.d(LOG_TAG,"Unit Type Not Found "+ unitType);
+            }
+
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
@@ -143,7 +167,7 @@ public class ForecastFragment extends Fragment{
         /**
          * Take the String representing the complete forecast in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
-         *
+         * <p/>
          * Fortunately parsing is easy:  constructor takes the JSON string and converts it
          * into an Object hierarchy for us.
          */
@@ -181,7 +205,7 @@ public class ForecastFragment extends Fragment{
             dayTime = new Time();
 
             String[] resultStrs = new String[numDays];
-            for(int i = 0; i < weatherArray.length(); i++) {
+            for (int i = 0; i < weatherArray.length(); i++) {
                 // For now, using the format "Day, description, hi/low"
                 String day;
                 String description;
@@ -195,7 +219,7 @@ public class ForecastFragment extends Fragment{
                 // "this saturday".
                 long dateTime;
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                dateTime = dayTime.setJulianDay(julianStartDay + i);
                 day = getReadableDateString(dateTime);
 
                 // description is in a child array called "weather", which is 1 element long.
@@ -224,7 +248,7 @@ public class ForecastFragment extends Fragment{
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
-            String forecastJsonString  = null;
+            String forecastJsonString = null;
             int numDays = 7;
             try {
 
@@ -254,7 +278,7 @@ public class ForecastFragment extends Fragment{
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
 
-                if(inputStream == null){
+                if (inputStream == null) {
                     return null;
                 }
 
@@ -273,12 +297,12 @@ public class ForecastFragment extends Fragment{
                 }
                 forecastJsonString = buffer.toString();
 
-                Log.v(LOG_TAG,"ForecastJsonString : " + forecastJsonString);
-            }catch (IOException e) {
-                Log.e(LOG_TAG,"Error",e);
+                Log.v(LOG_TAG, "ForecastJsonString : " + forecastJsonString);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error", e);
 
                 return null;
-            }finally {
+            } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
@@ -292,7 +316,7 @@ public class ForecastFragment extends Fragment{
             }
 
             try {
-                return getWeatherDataFromJson(forecastJsonString, numDays );
+                return getWeatherDataFromJson(forecastJsonString, numDays);
             } catch (JSONException e) {
                 Log.e(LOG_TAG, "Error get Weather From Json", e);
             }
@@ -302,25 +326,25 @@ public class ForecastFragment extends Fragment{
 
         @Override
         protected void onPostExecute(String[] results) {
-           if(results != null){
-               adapter.clear();
-               adapter.addAll(results);
+            if (results != null && adapter != null) {
+                adapter.clear();
+                adapter.addAll(results);
                /*for(String a : results){
                    adapter.add(a);
                }*/
-           }
+            }
 
 
         }
     }
 
-    private class AdapterCustom extends ArrayAdapter<String>{
+    private class AdapterCustom extends ArrayAdapter<String> {
         private Context context;
         private ArrayList arrayList;
         private int layout;
 
 
-        public AdapterCustom(Context context,int layout, int listText, ArrayList list){
+        public AdapterCustom(Context context, int layout, int listText, ArrayList list) {
             super(context, layout, listText, list);
             this.context = context;
             this.arrayList = list;
@@ -339,9 +363,9 @@ public class ForecastFragment extends Fragment{
             String textList = (String) arrayList.get(position);
             text.setText(textList);
 
-            if(position % 2 == 0 ){
+            if (position % 2 == 0) {
                 img.setImageResource(R.drawable.shirt);
-            }else{
+            } else {
                 img.setImageResource(R.mipmap.ic_launcher);
             }
 
