@@ -6,5 +6,7 @@
     <string name="list_forecast_textview">Today - Sunny - 88/63</string>
     <string name="title_activity_detail">DetailActivity</string>
     <string name="action_map">Map Location</string>
+    
+    <string name="action__share">Share</string>
 
 </resources>
