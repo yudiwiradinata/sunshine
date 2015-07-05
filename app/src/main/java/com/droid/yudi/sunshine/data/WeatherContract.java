@@ -1,6 +1,8 @@
 package com.droid.yudi.sunshine.data;
 
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.util.Calendar;
@@ -12,6 +14,12 @@ import java.util.GregorianCalendar;
  * Created by probook4420s on 7/5/2015.
  */
 public class WeatherContract {
+
+    public static final String CONTENT_AUTHORITY = "com.droid.yudi.sunshine";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_WEATHER = "weather";
+    public static final String PATH_LOCATION = "location";
+
 
     public static long NORMALIZE_DATE(long startDate){
         /*
@@ -31,6 +39,12 @@ public class WeatherContract {
     }
 
     public static final class LocationEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
+
         public static final String TABLE_NAME = "location";
 
         public static final String COLUMN_LOCATION_SETTING = "location_setting";
